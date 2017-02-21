@@ -6,17 +6,21 @@ import scipy.ndimage
 
 from skimage import measure, morphology
 
+
 def load_train(new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None):
     train_path = "../input/train/"
     return image_generator(train_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+
 
 def load_sample():
     sample_path = "../input/sample/"
     return image_generator(sample_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
 
+
 def load_test():
     test_path = "../input/test/"
     return image_generator(test_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+
 
 def image_generator(data_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None):
     """
@@ -148,7 +152,7 @@ def largest_label_volume(im, bg=-1):
     """
     im -- a 3d array of the lung scan in HU
     bg -- the background value of the image
-    
+
     Returns the value other than bg that
     occurs the most and None if there is no such value.
     """
