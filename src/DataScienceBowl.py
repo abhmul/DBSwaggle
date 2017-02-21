@@ -35,7 +35,7 @@ def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_st
         An image generator that yields the next image in the directory, preprocessing completed.
     """
     # Grab all dicom files from data_path directory
-    image_names = [f_name for f_name in os.listdir(data_path) if os.splitext(fname)[1] == ".dcm"]
+    image_names = [f_name for f_name in f_names for (dirpath, dirnames, f_names) in os.walk(data_path) if os.splitext(fname)[1] == ".dcm"]
     for i_name in image_names:
         # Load patient
         slices = load_scan(os.path.join(data_path, i_name))
