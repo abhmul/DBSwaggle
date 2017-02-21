@@ -148,6 +148,16 @@ def plot_3d(image, threshold=-300):
 
     plt.show()
 
+def plot_2d(segmented_image, threshold=-300):
+    """
+    Plots a segmented image in 2d space of all pixels with HU above threshold
+    """
+    p = image.transpose(2,1,0)
+    for im_slice in segmented_image:
+        # float32 tells imshow that values are between 0 and 1
+        plt.imshow(im_slice.astype(np.float32))
+        plt.show()
+        
 def largest_label_volume(im, bg=-1):
     """
     im -- a 3d array of the lung scan in HU
