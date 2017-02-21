@@ -136,3 +136,13 @@ def segment_lung_mask(image, fill_lung_structures=True):
         binary_image[labels != l_max] = 0
 
     return binary_image
+
+def normalize(image, min_bound = -1000, max_bound = 400):
+    image = (image - min_bound) / (max_bound - min_bound)
+    image[image>1] = 1.
+    image[image<0] = 0.
+    return image
+
+def zero_center(image, pixel_mean = 0.25):
+    image = image - pixel_mean
+    return image
