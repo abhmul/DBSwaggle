@@ -4,6 +4,10 @@ import numpy as np
 
 # Load the scans in given folder path
 def load_scan(path):
+    """
+    Loads a dicom file specified by path into a dicom object.
+    Infers the slice thickness from the first two slices.
+    """
     slices = [dicom.read_file(path + '/' + s) for s in os.listdir(path)]
     slices.sort(key=lambda x: int(x.ImagePositionPatient[2]))
     try:
@@ -16,7 +20,12 @@ def load_scan(path):
 
     return slices
 
+
 def get_pixels_hu(slices):
+    """
+    Turns each image pixel to Hounsfield units
+    Sets pixels outside the bound of the image to 0
+    """
     image = np.stack([s.pixel_array for s in slices])
     # Convert to int16 (from sometimes int16),
     # should be possible as values should always be low enough (<32k)
