@@ -22,7 +22,7 @@ def load_test(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, no
     return image_generator(test_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
 
 
-def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
+def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None, plot3d=False):
     """
     Inputs:
         data_path -- Path to directory with images to be loaded/processed.
@@ -35,10 +35,11 @@ def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_st
         An image generator that yields the next image in the directory, preprocessing completed.
     """
     # Grab all dicom files from data_path directory
-    image_names = [f_name for f_name in f_names for (dirpath, dirnames, f_names) in os.walk(data_path) if os.splitext(fname)[1] == ".dcm"]
+    # image_names = [os.path.join(dirpath, f_name) for (dirpath, dirnames, f_names) in os.walk(data_path) for f_name in f_names if os.path.splitext(f_name)[1] == ".dcm"]
+    image_names = [os.path.join(data_path, dirname) for dirname in os.listdir(data_path)]
     for i_name in image_names:
         # Load patient
-        slices = load_scan(os.path.join(data_path, i_name))
+        slices = load_scan(i_name)
 
         # Convert pixels to HU
         pixels = get_pixels_hu(slices)
@@ -53,7 +54,7 @@ def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_st
         if norm is not None and len(norm) == 2:
             segmented_lungs = normalize(segmented_lungs, norm[0], norm[1])
         if center_mean is not None:
-            segmented_lungs = zero_center(center_mean
+            segmented_lungs = zero_center(center_mean)
         yield segmented_lungs
 
 # Load the scans in given folder path
@@ -127,6 +128,9 @@ def plot_3d(image, threshold=-300):
     """
     Plots the image in 3d space of all pixels with HU above threshold
     """
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+    import matplotlib.pyplot as plt
+
     # Position the scan upright,
     # so the head of the patient would be at the top facing the camera
     p = image.transpose(2,1,0)
@@ -152,10 +156,12 @@ def plot_2d(segmented_image, threshold=-300):
     """
     Plots a segmented image in 2d space of all pixels with HU above threshold
     """
+    import matplotlib.pyplot as plt
+
     p = segmented_image.transpose(2,1,0)
     for im_slice in p:
         # float32 tells imshow that values are between 0 and 1
-        plt.imshow(im_slice.astype(np.float32))
+        plt.imshow(im_slice, cmap=plt.cm.gray)
         plt.show()
 
 def largest_label_volume(im, bg=-1):
