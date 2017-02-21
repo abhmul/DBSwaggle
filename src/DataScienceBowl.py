@@ -4,7 +4,8 @@ import numpy as np
 # Load the scans in given folder path
 def load_scan(path):
     """
-    Loads a dicom file specified by path into a dicom object.
+    Loads a dicom file specified by path into a list of slices.
+    Each slice is a dicom object.
     Infers the slice thickness from the first two slices.
     """
     slices = [dicom.read_file(path + '/' + s) for s in os.listdir(path)]
@@ -24,6 +25,7 @@ def get_pixels_hu(slices):
     """
     Turns each image pixel to Hounsfield units
     Sets pixels outside the bound of the image to 0
+    Returns a 3darray of the scan
     """
     image = np.stack([s.pixel_array for s in slices])
     # Convert to int16 (from sometimes int16),
@@ -41,14 +43,18 @@ def get_pixels_hu(slices):
         slope = slices[slice_number].RescaleSlope
 
         if slope != 1:
-            image[slice_number] = slope * image[slice_number].astype(np.float64)
-            image[slice_number] = image[slice_number].astype(np.int16)
+            image[slice_number] = (slope * image[slice_number].astype(np.float64)).astype(np.int16)
 
         image[slice_number] += np.int16(intercept)
 
     return np.array(image, dtype=np.int16)
 
-def resample(image, scan, new_spacing=[1,1,1]):
+
+def resample(image, scan, new_spacing=[1,1,1], mode='nearest'):
+    """
+    Resizes image so we have uniform spacing between pixels
+    Returns a tuple of the image and the new_spacing
+    """
     # Determine current pixel spacing
     spacing = np.array([scan[0].SliceThickness] + scan[0].PixelSpacing, dtype=np.float32)
 
@@ -63,7 +69,9 @@ def resample(image, scan, new_spacing=[1,1,1]):
     return image, new_spacing
 
 def plot_3d(image, threshold=-300):
-
+    """
+    Plots the image in 3d space of all pixels with HU above threshold
+    """
     # Position the scan upright,
     # so the head of the patient would be at the top facing the camera
     p = image.transpose(2,1,0)
@@ -86,6 +94,13 @@ def plot_3d(image, threshold=-300):
     plt.show()
 
 def largest_label_volume(im, bg=-1):
+    """
+    im -- a 3d array of the lung scan in HU
+    bg -- the background value of the image
+    
+    Returns the value other than bg that
+    occurs the most and None if there is no such value.
+    """
     vals, counts = np.unique(im, return_counts=True)
 
     counts = counts[vals != bg]
