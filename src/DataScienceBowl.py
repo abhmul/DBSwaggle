@@ -148,7 +148,7 @@ def largest_label_volume(im, bg=-1):
     """
     im -- a 3d array of the lung scan in HU
     bg -- the background value of the image
-    
+
     Returns the value other than bg that
     occurs the most and None if there is no such value.
     """
