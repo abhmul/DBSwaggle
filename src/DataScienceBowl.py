@@ -1,5 +1,56 @@
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import dicom
-import numpy as np
+import os
+import scipy.ndimage
+
+from skimage import measure, morphology
+
+def load_train(new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None):
+    train_path = "../input/train/"
+    return image_generator(train_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+
+def load_sample():
+    sample_path = "../input/sample/"
+    return image_generator(sample_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+
+def load_test():
+    test_path = "../input/test/"
+    return image_generator(test_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+
+def image_generator(data_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None):
+    """
+    Inputs:
+        data_path -- Path to directory with images to be loaded/processed.
+        new_spacing -- New spacing to assign between pixels in resampling
+        fill_lung_structures -- boolean, determines whether or not to fill lungs in segmentation
+        norm -- None if no normalization, or else (min_bound, max_bound)
+        center_mean -- None if no zero centering, or else pixel_mean
+
+    Returns:
+        An image generator that yields the next image in the directory, preprocessing completed.
+    """
+    # Grab all .dicom files from data_path directory
+    image_names = [f_name for f_name in os.listdir(data_path) if os.splitext(fname)[1] == ".dicom"]
+    for i_name in image_names:
+        # Load patient
+        slices = load_scan(os.path.join(data_path, i_name))
+
+        # Convert pixels to HU
+        pixels = get_pixels_hu(slices)
+
+        # Resample pixels
+        resampled_pixels, spacing = resample(pixels, slices, new_spacing)
+
+        # Get segmented lung mask
+        segmented_lungs = segment_lung_mask(resampled_pixels, fill_lung_structures)
+
+        # Normalize and zero center if desired
+        if norm is not None and len(norm) == 2:
+            segmented_lungs = normalize(segmented_lungs, norm[0], norm[1])
+        if center_mean is not None:
+            segmented_lungs = zero_center(center_mean
+        yield segmented_lungs
 
 # Load the scans in given folder path
 def load_scan(path):
@@ -151,3 +202,13 @@ def segment_lung_mask(image, fill_lung_structures=True):
         binary_image[labels != l_max] = 0
 
     return binary_image
+
+def normalize(image, min_bound=-1000, max_bound=400):
+    image = (image - min_bound) / (max_bound - min_bound)
+    image[image>1] = 1.
+    image[image<0] = 0.
+    return image
+
+def zero_center(image, pixel_mean = 0.25):
+    image = image - pixel_mean
+    return image
