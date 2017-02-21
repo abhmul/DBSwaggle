@@ -7,22 +7,22 @@ import scipy.ndimage
 from skimage import measure, morphology
 
 
-def load_train(new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None):
+def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     train_path = "../input/train/"
-    return image_generator(train_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+    return image_generator(train_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
 
 
-def load_sample():
+def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     sample_path = "../input/sample/"
-    return image_generator(sample_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+    return image_generator(sample_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
 
 
-def load_test():
+def load_test(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     test_path = "../input/test/"
-    return image_generator(test_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+    return image_generator(test_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
 
 
-def image_generator(data_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None):
+def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     """
     Inputs:
         data_path -- Path to directory with images to be loaded/processed.
@@ -47,7 +47,7 @@ def image_generator(data_path, new_spacing=[1,1,1], fill_lung_structures=True, n
         resampled_pixels, spacing = resample(pixels, slices, new_spacing)
 
         # Get segmented lung mask
-        segmented_lungs = segment_lung_mask(resampled_pixels, fill_lung_structures)
+        segmented_lungs = segment_lung_mask(resampled_pixels, threshold, fill_lung_structures)
 
         # Normalize and zero center if desired
         if norm is not None and len(norm) == 2:
@@ -166,11 +166,11 @@ def largest_label_volume(im, bg=-1):
     else:
         return None
 
-def segment_lung_mask(image, fill_lung_structures=True):
+def segment_lung_mask(image, threshold=-320, fill_lung_structures=True):
 
     # not actually binary, but 1 and 2.
     # 0 is treated as background, which we do not want
-    binary_image = np.array(image > -320, dtype=np.int8)+1
+    binary_image = np.array(image > threshold, dtype=np.int8)+1
     labels = measure.label(binary_image)
 
     # Pick the pixel in the very corner to determine which label is air.
