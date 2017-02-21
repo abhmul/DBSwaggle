@@ -127,7 +127,7 @@ def resample(image, scan, new_spacing=[1,1,1], mode='nearest'):
 
     return image, new_spacing
 
-def plot_3d(image, threshold=-300):
+def plot_3d(image, threshold=-300, num=0):
     """Plots the image in 3d space of all pixels with HU above threshold"""
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
     import matplotlib.pyplot as plt
@@ -150,7 +150,7 @@ def plot_3d(image, threshold=-300):
     ax.set_xlim(0, p.shape[0])
     ax.set_ylim(0, p.shape[1])
     ax.set_zlim(0, p.shape[2])
-
+    plt.savefig('img_' + str(num) + '_threshold_' + str(threshold))
     plt.show()
 
 def plot_2d(segmented_image, threshold=-300):
