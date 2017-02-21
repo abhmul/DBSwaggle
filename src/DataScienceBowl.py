@@ -7,22 +7,22 @@ import scipy.ndimage
 from skimage import measure, morphology
 
 
-def load_train(new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None):
+def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     train_path = "../input/train/"
-    return image_generator(train_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+    return image_generator(train_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
 
 
-def load_sample():
+def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     sample_path = "../input/sample/"
-    return image_generator(sample_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+    return image_generator(sample_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
 
 
-def load_test():
+def load_test(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     test_path = "../input/test/"
-    return image_generator(test_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None)
+    return image_generator(test_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
 
 
-def image_generator(data_path, new_spacing=[1,1,1], fill_lung_structures=True, norm=None, center_mean=None):
+def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     """
     Inputs:
         data_path -- Path to directory with images to be loaded/processed.
@@ -34,8 +34,8 @@ def image_generator(data_path, new_spacing=[1,1,1], fill_lung_structures=True, n
     Returns:
         An image generator that yields the next image in the directory, preprocessing completed.
     """
-    # Grab all .dicom files from data_path directory
-    image_names = [f_name for f_name in os.listdir(data_path) if os.splitext(fname)[1] == ".dicom"]
+    # Grab all dicom files from data_path directory
+    image_names = [f_name for f_name in f_names for (dirpath, dirnames, f_names) in os.walk(data_path) if os.splitext(fname)[1] == ".dcm"]
     for i_name in image_names:
         # Load patient
         slices = load_scan(os.path.join(data_path, i_name))
@@ -47,7 +47,7 @@ def image_generator(data_path, new_spacing=[1,1,1], fill_lung_structures=True, n
         resampled_pixels, spacing = resample(pixels, slices, new_spacing)
 
         # Get segmented lung mask
-        segmented_lungs = segment_lung_mask(resampled_pixels, fill_lung_structures)
+        segmented_lungs = segment_lung_mask(resampled_pixels, threshold, fill_lung_structures)
 
         # Normalize and zero center if desired
         if norm is not None and len(norm) == 2:
@@ -148,6 +148,16 @@ def plot_3d(image, threshold=-300):
 
     plt.show()
 
+def plot_2d(segmented_image, threshold=-300):
+    """
+    Plots a segmented image in 2d space of all pixels with HU above threshold
+    """
+    p = segmented_image.transpose(2,1,0)
+    for im_slice in p:
+        # float32 tells imshow that values are between 0 and 1
+        plt.imshow(im_slice.astype(np.float32))
+        plt.show()
+
 def largest_label_volume(im, bg=-1):
     """
     im -- a 3d array of the lung scan in HU
@@ -166,11 +176,11 @@ def largest_label_volume(im, bg=-1):
     else:
         return None
 
-def segment_lung_mask(image, fill_lung_structures=True):
+def segment_lung_mask(image, threshold=-320, fill_lung_structures=True):
 
     # not actually binary, but 1 and 2.
     # 0 is treated as background, which we do not want
-    binary_image = np.array(image > -320, dtype=np.int8)+1
+    binary_image = np.array(image > threshold, dtype=np.int8)+1
     labels = measure.label(binary_image)
 
     # Pick the pixel in the very corner to determine which label is air.
