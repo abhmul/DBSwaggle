@@ -1,10 +1,13 @@
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+"""A file for loading and manipulating the DSB data"""
+
+import numpy as np
 import dicom
 import os
 import scipy.ndimage
 
-from skimage import measure, morphology
+from skimage import measure
+
+
 
 
 def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
@@ -125,9 +128,7 @@ def resample(image, scan, new_spacing=[1,1,1], mode='nearest'):
     return image, new_spacing
 
 def plot_3d(image, threshold=-300):
-    """
-    Plots the image in 3d space of all pixels with HU above threshold
-    """
+    """Plots the image in 3d space of all pixels with HU above threshold"""
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
     import matplotlib.pyplot as plt
 
@@ -153,9 +154,7 @@ def plot_3d(image, threshold=-300):
     plt.show()
 
 def plot_2d(segmented_image, threshold=-300):
-    """
-    Plots a segmented image in 2d space of all pixels with HU above threshold
-    """
+    """Plots a segmented image in 2d space of all pixels with HU above threshold"""
     import matplotlib.pyplot as plt
 
     p = segmented_image.transpose(2,1,0)
