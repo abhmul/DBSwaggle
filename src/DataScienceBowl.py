@@ -7,17 +7,6 @@ import scipy.ndimage
 from scipy.ndimage.interpolation import zoom
 from skimage import measure
 
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-# For saving the data set in less memory
-from tempfile import TemporaryFile
-
-# Loads all the data to an svz file
-def save_svz(array_to_save):
-    outfile = TemporaryFile()
-    np.savez(outfile, array_to_save)
-=======
->>>>>>> Stashed changes
 
 
 def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
@@ -25,23 +14,12 @@ def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
 
     train_path = "../input/train/"
     return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
-<<<<<<< Updated upstream
-        norm, center_mean, seg_func=seg_func)
-=======
-def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
-    norm=None, center_mean=None, seg_func=None):
-=======
         norm, center_mean, seg_func=seg_func, img_size=img_size, order=order)
->>>>>>> Stashed changes
-
-    train_path = "../input/train/"
-    return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
-        norm, center_mean, seg_func=seg_func)
 
 >>>>>>> 5af0bef5d56c2d61ace106873d0a5f0ba4cf2892
 
 def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
-    norm=None, center_mean=None, seg_func=None):
+    norm=None, center_mean=None, seg_func=None, img_size=(150,150,150), order=3):
 
 <<<<<<< HEAD
 def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
