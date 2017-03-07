@@ -16,17 +16,9 @@ def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
     return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
         norm, center_mean, seg_func=seg_func, img_size=img_size, order=order)
 
->>>>>>> 5af0bef5d56c2d61ace106873d0a5f0ba4cf2892
-
 def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
     norm=None, center_mean=None, seg_func=None, img_size=(150,150,150), order=3):
 
-<<<<<<< HEAD
-def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
-    norm=None, center_mean=None, seg_func=None, img_size=(150,150,150), order=3):
-
-=======
->>>>>>> 5af0bef5d56c2d61ace106873d0a5f0ba4cf2892
     sample_path = "../input/sample/"
     return image_generator(sample_path, new_spacing, threshold, fill_lung_structures,
         norm, center_mean, seg_func=seg_func, img_size=img_size, order=order)
