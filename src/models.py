@@ -7,6 +7,7 @@ def conv3D(img_dim = (50, 50, 20), nb_filters = (32, 64), conv_size = 3, pool_si
     img_rows, img_cols, img_depth = img_dim[0], img_dim[1], img_dim[2]
     nb_conv = [conv_size, conv_size, conv_size]
     nb_pool = [pool_size, pool_size, pool_size]
+    nb_classes = 2
 
     model = Sequential()
 
