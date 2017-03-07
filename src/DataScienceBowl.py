@@ -4,11 +4,9 @@ import numpy as np
 import dicom
 import os
 import scipy.ndimage
-
+from scipy.ndimage.interpolation import zoom
 from skimage import measure
 
-# For saving the data set in less memory
-from tempfile import TemporaryFile
 
 
 # TODO
@@ -24,38 +22,31 @@ def resize_data_set(directory = None):
         outfile_path = os.path.join(directory, outfile_name) + ".npz"
         np.savez_compressed(outfile_path, img)
     
-
 def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
-    norm=None, center_mean=None, seg_func=None):
+    norm=None, center_mean=None, seg_func=None, img_size=(150,150,150), order=3):
 
     train_path = "../input/train/"
     return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
-        norm, center_mean, seg_func=seg_func)
-
-
+        norm, center_mean, seg_func=seg_func, img_size=img_size, order=order)
 
 def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
-    norm=None, center_mean=None, seg_func=None):
+    norm=None, center_mean=None, seg_func=None, img_size=(150,150,150), order=3):
 
     sample_path = "../input/sample/"
     return image_generator(sample_path, new_spacing, threshold, fill_lung_structures,
-        norm, center_mean, seg_func=seg_func)
+        norm, center_mean, seg_func=seg_func, img_size=img_size, order=order)
 
 
 def load_test(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None,
-    center_mean=None, seg_func=None):
+    center_mean=None, seg_func=None, img_size=(150,150,150), order=3):
 
     test_path = "../input/test/"
     return image_generator(test_path, new_spacing, threshold, fill_lung_structures,
-        norm, center_mean, seg_func=seg_func)
+        norm, center_mean, seg_func=seg_func, img_size=img_size, order=order)
 
 
-#TODO
-#
-# yeild
-#
-def image_generator(data_path, new_spacing=[1,1,1], threshold=-320,
-    fill_lung_structures=True, norm=None, center_mean=None, plot3d=False, seg_func=None):
+def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
+    norm=None, center_mean=None, plot3d=False, seg_func=None, img_size=(150,150,150), order=3):
     """
     Inputs:
         data_path -- Path to directory with images to be loaded/processed.
@@ -85,6 +76,9 @@ def image_generator(data_path, new_spacing=[1,1,1], threshold=-320,
 
         # Get segmented lung mask
         segmented_lungs = seg_func(resampled_pixels, threshold, fill_lung_structures)
+
+        # Resize
+        segmented_lungs = resize(segmented_lungs, img_size, order)
 
         # Normalize and zero center if desired
         if norm is not None and len(norm) == 2:
@@ -162,6 +156,21 @@ def resample(image, scan, new_spacing=[1,1,1], mode='nearest'):
     image = scipy.ndimage.interpolation.zoom(image, real_resize_factor, mode='nearest')
 
     return image, new_spacing
+
+def resize(image, shape, order = 3):
+    """
+    Resizes image to shape.
+
+    shape = (width, height, depth)
+    """
+
+    in_shape = image.shape
+
+    resize_factors = [float(s)/i_s for (s,i_s) in zip(shape, in_shape)]
+
+    return zoom(image, resize_factors, order=order)
+
+
 
 def plot_3d(image, threshold=-300, num=0):
     """Plots the image in 3d space of all pixels with HU above threshold"""

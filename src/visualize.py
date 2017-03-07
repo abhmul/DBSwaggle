@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import DataScienceBowl as dsb
 
-imgen = dsb.load_sample()
+imgen = dsb.load_sample(img_size=(200,200,200))
 
 next(imgen)
 # for idx, i in enumerate(imgen):
