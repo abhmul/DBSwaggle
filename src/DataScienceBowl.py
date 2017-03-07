@@ -9,7 +9,7 @@ from skimage import measure
 
 
 
-
+# Load training data
 def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     train_path = "../input/train/"
     return image_generator(train_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
