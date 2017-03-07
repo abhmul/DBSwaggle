@@ -1,2 +1,4 @@
 input/
 src/__pycache__/
+
+\.~lock\.stage1_labels\.csv#
