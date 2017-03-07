@@ -3,7 +3,7 @@ import models
 
 num_test_pics = 1000 # This number needs to be calculated
 best_model_file = '../models/conv3d2layer_weights.h5'
-model_func = models.asd
+model_func = models.conv3d
 
 # Instantiate the generators
 test_gen = dsb.load_test(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None)
@@ -14,4 +14,5 @@ model = model_func()
 # Get the predictions
 predictions = model.predict_generator(test_gen, num_test_pics, verbose=1)
 
+# Save the submission file
 dsb.create_submission(predictions)
