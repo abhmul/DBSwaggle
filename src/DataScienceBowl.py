@@ -33,7 +33,7 @@ def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_st
         fill_lung_structures -- boolean, determines whether or not to fill lungs in segmentation
         norm -- None if no normalization, or else (min_bound, max_bound)
         center_mean -- None if no zero centering, or else pixel_mean
-
+        segment_algo -- A lung segmentation algorithm
     Returns:
         An image generator that yields the next image in the directory, preprocessing completed.
     """
