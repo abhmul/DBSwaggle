@@ -7,15 +7,23 @@ import scipy.ndimage
 
 from skimage import measure
 
-<<<<<<< HEAD
 # For saving the data set in less memory
 from tempfile import TemporaryFile
 
+
+# TODO
+
 # Loads all the data to an svz file
-def save_svz(array_to_save):
-    outfile = TemporaryFile()
-    np.savez(outfile, array_to_save)
-
+def resize_data_set(directory = None):
+    train = load_train()
+    for i, img in train:
+        #outfile = open(os.path.)
+        # Split data with OS
+        # Get tail of patient id from i
+        outfile_name = i.split(os.sep)[-1]
+        outfile_path = os.path.join(directory, outfile_name) + ".npz"
+        np.savez_compressed(outfile_path, img)
+    
 
 def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
     norm=None, center_mean=None, seg_func=None):
@@ -23,25 +31,12 @@ def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
     train_path = "../input/train/"
     return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
         norm, center_mean, seg_func=seg_func)
-=======
-def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
-    norm=None, center_mean=None, seg_func=None):
 
-    train_path = "../input/train/"
-    return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
-        norm, center_mean, seg_func=seg_func)
 
->>>>>>> 5af0bef5d56c2d61ace106873d0a5f0ba4cf2892
 
 def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
     norm=None, center_mean=None, seg_func=None):
 
-<<<<<<< HEAD
-def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
-    norm=None, center_mean=None, seg_func=None):
-
-=======
->>>>>>> 5af0bef5d56c2d61ace106873d0a5f0ba4cf2892
     sample_path = "../input/sample/"
     return image_generator(sample_path, new_spacing, threshold, fill_lung_structures,
         norm, center_mean, seg_func=seg_func)
@@ -55,6 +50,10 @@ def load_test(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, no
         norm, center_mean, seg_func=seg_func)
 
 
+#TODO
+#
+# yeild
+#
 def image_generator(data_path, new_spacing=[1,1,1], threshold=-320,
     fill_lung_structures=True, norm=None, center_mean=None, plot3d=False, seg_func=None):
     """
@@ -95,7 +94,7 @@ def image_generator(data_path, new_spacing=[1,1,1], threshold=-320,
 
         print(segmented_lungs.shape)
 
-        yield segmented_lungs
+        yield (i_name, segmented_lungs)
 
 # Load the scans in given folder path
 def load_scan(path):
