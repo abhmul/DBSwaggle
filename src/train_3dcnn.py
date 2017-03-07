@@ -8,7 +8,7 @@ num_train_pics = 1000 # This number needs to be calculated
 num_val_pics = 100 # This number needs to be calculated
 nb_epoch = 25
 best_model_file = '../models/conv3d2layer_weights.h5'
-model_func = models.asd
+model_func = models.conv3d
 
 # Instantiate the generators
 train_gen = dsb.load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None)
