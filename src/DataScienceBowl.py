@@ -7,25 +7,32 @@ import scipy.ndimage
 
 from skimage import measure
 
+def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
+    norm=None, center_mean=None, seg_func=None):
 
-
-
-def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
     train_path = "../input/train/"
-    return image_generator(train_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
+    return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
+        norm, center_mean, seg_func=seg_func)
 
 
-def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
+def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
+    norm=None, center_mean=None, seg_func=None):
+
     sample_path = "../input/sample/"
-    return image_generator(sample_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
+    return image_generator(sample_path, new_spacing, threshold, fill_lung_structures,
+        norm, center_mean, seg_func=seg_func)
 
 
-def load_test(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None):
+def load_test(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None,
+    center_mean=None, seg_func=None):
+
     test_path = "../input/test/"
-    return image_generator(test_path, new_spacing, threshold, fill_lung_structures, norm, center_mean)
+    return image_generator(test_path, new_spacing, threshold, fill_lung_structures,
+        norm, center_mean, seg_func=seg_func)
 
 
-def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True, norm=None, center_mean=None, plot3d=False):
+def image_generator(data_path, new_spacing=[1,1,1], threshold=-320,
+    fill_lung_structures=True, norm=None, center_mean=None, plot3d=False, seg_func=None):
     """
     Inputs:
         data_path -- Path to directory with images to be loaded/processed.
@@ -37,6 +44,9 @@ def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_st
     Returns:
         An image generator that yields the next image in the directory, preprocessing completed.
     """
+
+    if seg_func is None:
+        seg_func = segment_lung_mask
     # Grab all dicom files from data_path directory
     # image_names = [os.path.join(dirpath, f_name) for (dirpath, dirnames, f_names) in os.walk(data_path) for f_name in f_names if os.path.splitext(f_name)[1] == ".dcm"]
     image_names = [os.path.join(data_path, dirname) for dirname in os.listdir(data_path)]
@@ -51,13 +61,16 @@ def image_generator(data_path, new_spacing=[1,1,1], threshold=-320, fill_lung_st
         resampled_pixels, spacing = resample(pixels, slices, new_spacing)
 
         # Get segmented lung mask
-        segmented_lungs = segment_lung_mask(resampled_pixels, threshold, fill_lung_structures)
+        segmented_lungs = seg_func(resampled_pixels, threshold, fill_lung_structures)
 
         # Normalize and zero center if desired
         if norm is not None and len(norm) == 2:
             segmented_lungs = normalize(segmented_lungs, norm[0], norm[1])
         if center_mean is not None:
             segmented_lungs = zero_center(center_mean)
+
+        print(segmented_lungs.shape)
+
         yield segmented_lungs
 
 # Load the scans in given folder path
