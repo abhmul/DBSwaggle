@@ -7,6 +7,7 @@ import scipy.ndimage
 
 from skimage import measure
 
+<<<<<<< HEAD
 # For saving the data set in less memory
 from tempfile import TemporaryFile
 
@@ -22,11 +23,25 @@ def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
     train_path = "../input/train/"
     return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
         norm, center_mean, seg_func=seg_func)
+=======
+def load_train(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
+    norm=None, center_mean=None, seg_func=None):
 
+    train_path = "../input/train/"
+    return image_generator(train_path, new_spacing, threshold, fill_lung_structures,
+        norm, center_mean, seg_func=seg_func)
+
+>>>>>>> 5af0bef5d56c2d61ace106873d0a5f0ba4cf2892
 
 def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
     norm=None, center_mean=None, seg_func=None):
 
+<<<<<<< HEAD
+def load_sample(new_spacing=[1,1,1], threshold=-320, fill_lung_structures=True,
+    norm=None, center_mean=None, seg_func=None):
+
+=======
+>>>>>>> 5af0bef5d56c2d61ace106873d0a5f0ba4cf2892
     sample_path = "../input/sample/"
     return image_generator(sample_path, new_spacing, threshold, fill_lung_structures,
         norm, center_mean, seg_func=seg_func)
