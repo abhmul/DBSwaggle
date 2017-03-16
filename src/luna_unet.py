@@ -4,13 +4,15 @@ import os
 import pandas as pd
 import numpy as np
 
+progbar = True
 try:
     from tqdm import tqdm
 except ImportError:
     tqdm = lambda x: x
     print("Install TQDM for a progress bar")
+    progbar = False
 
-verify_results = True
+verify_results = False
 if verify_results:
     import matplotlib.pyplot as plt
     plt.ion()
@@ -91,7 +93,8 @@ df_node["file"] = df_node["seriesuid"].apply(get_filename)
 df_node = df_node.dropna()
 
 for fcount, img_file in enumerate(tqdm(file_list)):
-    print("Getting mask for image file {}".format(os.path.basename(img_file)))
+    if not progbar:
+        print("Getting mask for image file {}".format(os.path.basename(img_file)))
     mini_df = df_node[df_node["file"] == img_file]  # Get all nodules for file
     if len(mini_df) > 0:  # Some files may not have a nodule -- skip these
         # Examine every node
