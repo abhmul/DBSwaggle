@@ -26,19 +26,23 @@ def get_filename(case):
 
 
 def make_mask(z_px, px_center, mm_center, origin, diam_mm, spacing, width,
-              height, padding=5):
+              height, padding="double"):
     """
     Center : centers of circles mm -- list of coordinates x,y,z
     diam : diameters of circles mm -- diameter
     widthXheight : pixel dim of image
     spacing = mm/px conversion rate np array x,y,z
     origin = x,y,z mm np.array
+    padding = amount of space to include around the nodule
     """
-    slice_arr = np.arange(len(z_px))
     mask = np.zeros((len(z_px), height, width), dtype=np.uint8)  # z, y, x
     rad_mm = diam_mm / 2
+    # Get the average spacing for working with the padding
+    avg_spacing = np.average(spacing[:2])
+    # Calculate the padding
+    if padding == "double":
+        padding = rad_mm / avg_spacing
     # Get the bounds for the search cube
-    # Add 20 to increase the search space
     x_bound, y_bound = np.ceil(rad_mm / spacing[:2] + padding).astype(int)
     # Loop through the cube and set px within diam to 1
     # OLD VERSION
@@ -57,7 +61,7 @@ def make_mask(z_px, px_center, mm_center, origin, diam_mm, spacing, width,
     # Select the points that lie within the sphere
     pts = pts[np.linalg.norm(spacing * pts[:, [2, 1, 0]] +
                             (origin - center_mm), axis=1) <=
-                            (rad_mm + np.average(spacing[:2]) * padding)]
+                            (rad_mm + avg_spacing * padding)]
     # Assign those points to 1
     mask[np.where(z_px == pts[:, 0:1])[1], pts[:, 1], pts[:, 2]] = 1
 
