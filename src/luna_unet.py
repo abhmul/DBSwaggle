@@ -44,8 +44,9 @@ def make_mask(z_px, px_center, mm_center, origin, diam_mm, spacing, width,
         padding = rad_mm / avg_spacing
     # Get the bounds for the search cube
     x_bound, y_bound = np.ceil(rad_mm / spacing[:2] + padding).astype(int)
+
+    # DEPRECATED VERSION
     # Loop through the cube and set px within diam to 1
-    # OLD VERSION
     # for z_px in slice_arr:
     #     for y_px in range(-y_bound + px_center, y_bound + px_center):
     #         for x_px in range(-x_bound + px_center, x_bound + px_center):
