@@ -6,7 +6,7 @@ import numpy as np
 
 try:
     from tqdm import tqdm
-except ImportError;
+except ImportError:
     tqdm = lambda x: x
     print("Install TQDM for a progress bar")
 
@@ -16,11 +16,11 @@ if verify_results:
     plt.ion()
     fig, ax = plt.subplots(2, 2, figsize=[8, 8])
 
-luna_path = "../input/luna_2016"  # TODO fill in path
+luna_path = "../input/luna_2016"
 subset = "subset0"
 file_list = glob(os.path.join(luna_path, subset, "*.mhd"))
 
-output_path = subset + "_npy"  # TODO fill in path
+output_path = subset + "_npy"
 
 # Helper function to associate seriesuid with filename
 def get_filename(case):
@@ -94,38 +94,38 @@ for fcount, img_file in enumerate(tqdm(file_list)):
     print("Getting mask for image file {}".format(os.path.basename(img_file)))
     mini_df = df_node[df_node["file"] == img_file]  # Get all nodules for file
     if len(mini_df) > 0:  # Some files may not have a nodule -- skip these
-        # Just use the biggest node TODO Change this to be every node
-        biggest_node = np.argmax(mini_df["diameter_mm"].values)
-        # Get the coordinates of the center
-        node_x = mini_df["coordX"].values[biggest_node]
-        node_y = mini_df["coordY"].values[biggest_node]
-        node_z = mini_df["coordZ"].values[biggest_node]
-        diam_mm = mini_df["diameter_mm"].values[biggest_node]  # diam of nodule (mm)
+        # Examine every node
+        for node_idx in range(len(mini_df["diameter_mm"].values)):
+            # Get the coordinates of the center
+            node_x = mini_df["coordX"].values[node_idx]
+            node_y = mini_df["coordY"].values[node_idx]
+            node_z = mini_df["coordZ"].values[node_idx]
+            diam_mm = mini_df["diameter_mm"].values[node_idx]  # diam of nodule (mm)
 
-        # Read in the mhd image file and get nodule and image info
-        itk_img = sitk.ReadImage(img_file)
-        center_mm = np.array([node_x, node_y, node_z])  # nodule center mm (x,y,z)
-        origin = np.array([itk_img.GetOrigin()]).flatten()    # x,y,z Origin in world (mm)
-        spacing = np.array(itk_img.GetSpacing())    # spacing of slices in mm/px
-        px_center = np.rint((center_mm - origin) / spacing)  # nodule center px
+            # Read in the mhd image file and get nodule and image info
+            itk_img = sitk.ReadImage(img_file)
+            center_mm = np.array([node_x, node_y, node_z])  # nodule center mm (x,y,z)
+            origin = np.array([itk_img.GetOrigin()]).flatten()    # x,y,z Origin in world (mm)
+            spacing = np.array(itk_img.GetSpacing())    # spacing of slices in mm/px
+            px_center = np.rint((center_mm - origin) / spacing)  # nodule center px
 
-        # Turn the image into a numpy array
-        img_array = sitk.GetArrayFromImage(itk_img)  # indexes are z,y,x
-        num_slices, height, width = img_array.shape
+            # Turn the image into a numpy array
+            img_array = sitk.GetArrayFromImage(itk_img)  # indexes are z,y,x
+            num_slices, height, width = img_array.shape
 
-        # Nodule center is located in px_center[2] slice (z position)
-        # We take the 3 slices closest to the center (-1, +0, +1)
-        image_inds = np.arange(int(px_center[2]) - 1,
-                               int(px_center[2]) + 2).clip(0, num_slices - 1)
-        imgs = img_array[image_inds].astype(np.float32)
-        masks = make_mask(image_inds, px_center, center_mm, origin, diam_mm,
-                           spacing, width, height)
+            # Nodule center is located in px_center[2] slice (z position)
+            # We take the 3 slices closest to the center (-1, +0, +1)
+            image_inds = np.arange(int(px_center[2]) - 1,
+                                   int(px_center[2]) + 2).clip(0, num_slices - 1)
+            imgs = img_array[image_inds].astype(np.float32)
+            masks = make_mask(image_inds, px_center, center_mm, origin, diam_mm,
+                               spacing, width, height)
 
-        # Check to make sure our masks and images look right
-        if verify_results:
-            verify(imgs, masks, plt)
+            # Check to make sure our masks and images look right
+            if verify_results:
+                verify(imgs, masks, plt)
 
-        # Save the numpy arrays
-        else:
-            np.save(os.path.join(luna_path, output_path, "images_%04d_%04d.npy" % (fcount, biggest_node)), imgs)
-            np.save(os.path.join(luna_path, output_path, "masks_%04d_%04d.npy" % (fcount, biggest_node)), imgs)
+            # Save the numpy arrays
+            else:
+                np.save(os.path.join(luna_path, output_path, "images_%04d_%04d.npy" % (fcount, node_idx)), imgs)
+                np.save(os.path.join(luna_path, output_path, "masks_%04d_%04d.npy" % (fcount, node_idx)), imgs)
