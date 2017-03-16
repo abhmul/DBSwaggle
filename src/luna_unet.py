@@ -2,8 +2,13 @@ import SimpleITK as sitk
 from glob import glob
 import os
 import pandas as pd
-from tqdm import tqdm
 import numpy as np
+
+try:
+    from tqdm import tqdm
+except ImportError;
+    tqdm = lambda x: x
+    print("Install TQDM for a progress bar")
 
 verify_results = True
 if verify_results:
