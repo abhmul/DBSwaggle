@@ -12,7 +12,7 @@ except ImportError:
     print("Install TQDM for a progress bar")
     progbar = False
 
-verify_results = False
+verify_results = True
 if verify_results:
     import matplotlib.pyplot as plt
     plt.ion()
