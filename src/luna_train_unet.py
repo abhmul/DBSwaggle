@@ -23,10 +23,11 @@ def dice_coef(y_true, y_pred):
     return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
 def dice_coef_np(y_true,y_pred):
-    y_true_f = y_true.flatten()
-    y_pred_f = y_pred.flatten()
-    intersection = np.sum(y_true_f * y_pred_f)
-    return (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth)
+    y_true_f = y_true.reshape((y_true.shape[0], -1))
+    y_pred_f = y_pred.reshape((y_pred.shape[0], -1))
+    intersection = np.sum(y_true_f * y_pred_f, axis=1)
+    sample_dice = (2. * intersection + smooth) / (np.sum(y_true_f, axis=1) + np.sum(y_pred_f, axis=1) + smooth)
+    return np.average(sample_dice)
 
 def dice_coef_loss(y_true, y_pred):
     return -dice_coef(y_true, y_pred)
@@ -78,29 +79,30 @@ def get_unet():
 
     return model
 
-def train_and_predict(use_existing=False):
+def train_and_predict(Xtr, Ytr, Xval, Yval, use_existing=False):
     print('-'*30)
     print('Loading and preprocessing train data...')
     print('-'*30)
     model = get_unet()
     # Saving weights to unet.hdf5 at checkpoints
-    model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss', save_best_only=True)
+    model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='val_loss', mode='min', save_best_only=True)
     # Should we load existing weights?
     # Set argument for call to train_and_predict to true at end of script
     if use_existing:
         model.load_weights("./unet.hdf5")
+
     # The final results for this tutorial were produced using a multi-GPU
     # machine using TitanX's.
     # For a home GPU computation benchmark, on my home set up with a GTX970
     # I was able to run 20 epochs with a training set size of 320 and
     # batch size of 2 in about an hour. I started getting reseasonable masks
     # after about 3 hours of training.
-    #
     print('-'*30)
     print('Fitting model...')
     print('-'*30)
-    model.fit(imgs_train, imgs_mask_train, batch_size=2, nb_epoch=20, verbose=1, shuffle=True,
-              callbacks=[model_checkpoint])
+    fit = model.fit(Xtr, Ytr, batch_size=2, nb_epoch=20, verbose=1, shuffle=True,
+                    validation_data = (Xval, Yval),
+                    callbacks=[model_checkpoint])
 
     # Loading best weights from training session
     print('-'*30)
@@ -111,12 +113,11 @@ def train_and_predict(use_existing=False):
     print('-'*30)
     print('Predicting masks on test data...')
     print('-'*30)
-    num_test = len(imgs_test)
-    imgs_mask_test = np.empty((num_test, 512, 512, 1))
-    imgs_mask_test = model.predict(imgs_test, batch_size=1, verbose=0)[0]
+    num_test = len(Xval)
+    Ypred = np.empty((num_test, 512, 512, 1))
+    Ypred = model.predict(Xval, batch_size=1, verbose=0)
     np.save('masksTestPredicted.npy', imgs_mask_test)
-    mean = 0.0
-    for i in range(num_test):
-        mean+=dice_coef_np(imgs_mask_test_true[i,0], imgs_mask_test[i,0])
-    mean/=num_test
+    mean = dice_coef_np(imgs_mask_test_true, imgs_mask_test)
     print("Mean Dice Coeff : ",mean)
+
+    return fit
