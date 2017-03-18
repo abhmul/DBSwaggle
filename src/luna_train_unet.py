@@ -60,3 +60,46 @@ def get_unet():
     model.compile(optimizer=Adam(lr=1.0e-5), loss=dice_coef_loss, metrics=[dice_coef])
 
     return model
+
+def train_and_predict(use_existing=False):
+    print('-'*30)
+    print('Loading and preprocessing train data...')
+    print('-'*30)
+    model = get_unet()
+    # Saving weights to unet.hdf5 at checkpoints
+    model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss', save_best_only=True)
+    # Should we load existing weights?
+    # Set argument for call to train_and_predict to true at end of script
+    if use_existing:
+        model.load_weights("./unet.hdf5")
+    # The final results for this tutorial were produced using a multi-GPU
+    # machine using TitanX's.
+    # For a home GPU computation benchmark, on my home set up with a GTX970
+    # I was able to run 20 epochs with a training set size of 320 and
+    # batch size of 2 in about an hour. I started getting reseasonable masks
+    # after about 3 hours of training.
+    #
+    print('-'*30)
+    print('Fitting model...')
+    print('-'*30)
+    model.fit(imgs_train, imgs_mask_train, batch_size=2, nb_epoch=20, verbose=1, shuffle=True,
+              callbacks=[model_checkpoint])
+
+    # Loading best weights from training session
+    print('-'*30)
+    print('Loading saved weights...')
+    print('-'*30)
+    model.load_weights('./unet.hdf5')
+
+    print('-'*30)
+    print('Predicting masks on test data...')
+    print('-'*30)
+    num_test = len(imgs_test)
+    imgs_mask_test = np.empty((num_test, 512, 512, 1))
+    imgs_mask_test = model.predict(imgs_test, batch_size=1, verbose=0)[0]
+    np.save('masksTestPredicted.npy', imgs_mask_test)
+    mean = 0.0
+    for i in range(num_test):
+        mean+=dice_coef_np(imgs_mask_test_true[i,0], imgs_mask_test[i,0])
+    mean/=num_test
+    print("Mean Dice Coeff : ",mean)
