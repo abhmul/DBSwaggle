@@ -50,6 +50,9 @@ def get_segmented_lungs(input_scan, **kwargs):
     """
     This funtion segments the lungs from the given 2D slice. It will generate
     a binary mask and then apply it to the input 2D scan.
+
+    Requires: the Input scan.
+    Returns: segmented slice 
     """
     im = input_scan
     plot = False
@@ -127,6 +130,9 @@ def segment_lung_from_ct_scan(ct_scan):
     """
     This function will segment an entire lung using the function get_semgented_lung.
     It applies the binary mask to every slice in the lung.
+
+    Requires: ct scan pixels
+    Returns: Segmented ct scan via binary mask for a single scan
     """
     return np.asarray([get_segmented_lungs(slice) for slice in ct_scan])
 
@@ -135,6 +141,9 @@ def remove_two_largest_cc(segmented_ct_scan):
     This function is to be used after filtering, to remove noise because of blood
     vessels. Removes the two largest connected component.
     Mutates the input segmented ct scan with the largest two ccs removed.
+
+    Requires: Any ct scans pixels (np array). Used for the segmented ct scan.
+    Returns: None, mutates input.
     """
 
     selem = ball(2)
@@ -163,7 +172,14 @@ def remove_two_largest_cc(segmented_ct_scan):
         else:
             index = (max((max_x - min_x), (max_y - min_y), (max_z - min_z))) / (min((max_x - min_x), (max_y - min_y) , (max_z - min_z)))
 
-def gen_candidates(path_name='../input/sample_images/00cba091fa4ad62cc3200a657aeb957e/', disp=False):
+def gen_candidates(path_name, disp=False):
+    """
+    This function needs a path name to a folder containing all the ct scans.
+    It will generate the candidates for the provided ct scan.
+
+    Requires: path to folder containing patient
+    Returns: Segemented CT Scan as nparray
+    """
     ct_scan = read_ct_scan(path_name)
 
     # For testing: display the input lung
@@ -191,11 +207,15 @@ def gen_candidates(path_name='../input/sample_images/00cba091fa4ad62cc3200a657ae
     segmented_ct_scan = segmented_ct_scan.astype(np.uint8)
     return segmented_ct_scan
 
-def gen_segment_all(outpath="segmented_lungs.npy", train_type="sample"):
+def segment_all(outpath="segmented_lungs.npy", train_type="sample"):
     """
-    This function takes in the path to the ouput file npy form, and the train type and will generate a list
-    of segmented lungs for all samples in the given path.
+    This is the main function that creates the npy file.
 
+    This function takes in the path to the ouput file npy form, and the train
+    type and will generate a list of segmented lungs for all samples in the
+    given path.
+
+    Requires: nothing
     Returns: None, outputs outpath .npy file.
     """
     data_paths = {
